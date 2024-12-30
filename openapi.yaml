@@ -1,0 +1,362 @@
+openapi: 3.0.3
+info:
+  title: Professional Profile API
+  description: API for managing employee professional profiles
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+    
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+  - url: https://api.staging.example.com/v1
+    description: Staging server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    Location:
+      type: object
+      properties:
+        continent:
+          type: string
+          description: Continent of employee location
+        country:
+          type: string
+          description: Country of employee location
+        region:
+          type: string
+          description: Region/State within country
+        locality:
+          type: string
+          description: City or specific locality
+        geo:
+          type: string
+          description: Geographic coordinates in format 'latitude,longitude'
+    
+    Certification:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of certification
+    
+    Education:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of educational institution
+        start_date:
+          type: string
+          format: date
+          description: Start date of education
+        end_date:
+          type: string
+          format: date
+          description: End date of education
+        degrees:
+          type: string
+          description: Degrees earned
+        majors:
+          type: string
+          description: Major fields of study
+        minors:
+          type: string
+          description: Minor fields of study
+    
+    Skill:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of skill
+        type:
+          type: string
+          description: Type of skill
+        category:
+          type: string
+          description: Main category of skill
+        sub_category:
+          type: string
+          description: Sub-category of skill
+        is_software:
+          type: boolean
+          description: Indicates if skill is software-related
+    
+    Job:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Company name
+        industry:
+          type: string
+          description: Company industry
+        title:
+          type: string
+          description: Job title
+        start_date:
+          type: string
+          format: date
+          description: Employment start date
+        end_date:
+          type: string
+          format: date
+          description: Employment end date
+        is_current:
+          type: boolean
+          description: Indicates if this is the current job
+        index:
+          type: integer
+          description: Job sequence number in career history
+    
+    Profile:
+      type: object
+      required:
+        - employee_id
+      properties:
+        employee_id:
+          type: string
+          description: Unique identifier for each employee
+        first_name:
+          type: string
+          description: Employee's first name
+        last_name:
+          type: string
+          description: Employee's last name
+        gender:
+          type: string
+          description: Employee's gender
+        location:
+          $ref: '#/components/schemas/Location'
+        summary:
+          type: string
+          description: Professional summary or bio
+        linkedin_url:
+          type: string
+          format: uri
+          description: URL to LinkedIn profile
+        certifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Certification'
+        education_history:
+          type: array
+          items:
+            $ref: '#/components/schemas/Education'
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/Skill'
+        job_history:
+          type: array
+          items:
+            $ref: '#/components/schemas/Job'
+    
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+    
+    ProfileList:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of profiles
+        page:
+          type: integer
+          description: Current page number
+        limit:
+          type: integer
+          description: Number of records per page
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Profile'
+
+security:
+  - bearerAuth: []
+
+paths:
+  /profiles:
+    get:
+      summary: List profiles
+      description: Retrieves a list of professional profiles with optional filtering
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of records per page
+        - name: country
+          in: query
+          schema:
+            type: string
+          description: Filter by country
+        - name: industry
+          in: query
+          schema:
+            type: string
+          description: Filter by current job industry
+        - name: skill
+          in: query
+          schema:
+            type: string
+          description: Filter by specific skill
+      responses:
+        '200':
+          description: Successfully retrieved profiles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileList'
+        '400':
+          description: Invalid input parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      summary: Create profile
+      description: Creates a new professional profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+      responses:
+        '201':
+          description: Profile created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  employee_id:
+                    type: string
+                  message:
+                    type: string
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Profile already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /profiles/{employee_id}:
+    parameters:
+      - name: employee_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier for employee
+    
+    get:
+      summary: Get profile
+      description: Retrieves a professional profile for a specific employee
+      responses:
+        '200':
+          description: Successfully retrieved profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      summary: Update profile
+      description: Updates an existing professional profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      summary: Delete profile
+      description: Deletes an existing professional profile
+      responses:
+        '200':
+          description: Profile deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

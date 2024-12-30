@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Professional Profile API Documentation" />
+    <title>Professional Profile API - Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .swagger-ui .topbar {
+            background-color: #1a365d;
+        }
+        .swagger-ui .info .title {
+            color: #1a365d;
+        }
+        .swagger-ui .opblock.opblock-get {
+            border-color: #4299e1;
+            background: rgba(66, 153, 225, 0.1);
+        }
+        .swagger-ui .opblock.opblock-post {
+            border-color: #48bb78;
+            background: rgba(72, 187, 120, 0.1);
+        }
+        .swagger-ui .opblock.opblock-put {
+            border-color: #ecc94b;
+            background: rgba(236, 201, 75, 0.1);
+        }
+        .swagger-ui .opblock.opblock-delete {
+            border-color: #f56565;
+            background: rgba(245, 101, 101, 0.1);
+        }
+        .swagger-ui .try-out {
+            display: none;
+        }
+        .swagger-ui .auth-wrapper {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.min.js"></script>
+    <script>
+        window.onload = () => {
+            window.ui = SwaggerUIBundle({
+                url: './openapi.yaml',
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "BaseLayout",
+                supportedSubmitMethods: [] // Disable try it out feature
+            });
+        };
+    </script>
+</body>
+</html>
