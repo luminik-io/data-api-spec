@@ -1,10 +1,7 @@
 openapi: 3.0.3
 info:
   title: Data API
-  description: |
-    API for accessing company, profile, and job posting data.
-    
-    All endpoints follow RESTful principles with company as the central domain model.
+  description: API for accessing company, profile, and job posting data
   version: 1.0.0
   contact:
     name: API Support
@@ -25,12 +22,8 @@ components:
     Company:
       type: object
       required:
-        - company_id
         - name
       properties:
-        company_id:
-          type: string
-          description: Unique identifier for the company
         name:
           type: string
           description: Official company name
@@ -50,116 +43,284 @@ components:
         founded:
           type: integer
           description: Year company was founded
+        linkedin:
+          type: object
+          properties:
+            url:
+              type: string
+              format: uri
+              description: Full LinkedIn company URL
+            slug:
+              type: string
+              description: LinkedIn URL identifier
         descriptions:
           type: object
           properties:
             short:
               type: string
+              description: Brief company description
             long:
               type: string
+              description: Detailed company description
         funding:
           type: object
           properties:
+            lead_investors:
+              type: string
+              description: Names of lead investors
+            investor_count:
+              type: integer
+              description: Total number of investors
+            latest:
+              type: object
+              properties:
+                year:
+                  type: integer
+                  description: Year of most recent funding
+                amount_musd:
+                  type: number
+                  description: Latest funding amount in USD millions
+                round:
+                  type: string
+                  description: Type of latest funding round
             total_equity_musd:
               type: number
+              description: Total equity funding in USD millions
             post_money_valuation_musd:
               type: number
+              description: Post-money valuation in USD millions
         metrics:
           type: object
           properties:
-            employee_count:
-              type: integer
+            is_serial_founder:
+              type: boolean
+              description: Indicates if founder has multiple ventures
             job_count:
               type: integer
+              description: Total number of job positions
+            employee_count:
+              type: integer
+              description: Total number of employees
 
     Profile:
       type: object
       required:
-        - profile_id
+        - employee_id
       properties:
-        profile_id:
+        employee_id:
           type: string
+          description: Unique identifier for each employee
         first_name:
           type: string
+          description: Employee's first name
         last_name:
           type: string
+          description: Employee's last name
+        gender:
+          type: string
+          description: Employee's gender
         location:
           type: object
+          description: Employee's location details
           properties:
+            continent:
+              type: string
+              description: Continent of employee location
             country:
               type: string
+              description: Country of employee location
             region:
               type: string
+              description: Region/State within country
             locality:
               type: string
+              description: City or specific locality
+            geo:
+              type: string
+              description: Geographic coordinates in format 'latitude,longitude'
         summary:
           type: string
-        skills:
+          description: Professional summary or bio
+        linkedin_connections:
+          type: integer
+          description: Number of LinkedIn connections profile has
+        linkedin_url:
+          type: string
+          description: URL to LinkedIn profile
+        certifications:
           type: array
+          description: List of professional certifications
           items:
             type: object
             properties:
               name:
                 type: string
-              category:
-                type: string
-        job_history:
+                description: Name of certification
+        education_history:
           type: array
+          description: List of educational experiences
           items:
             type: object
             properties:
-              company_id:
+              name:
                 type: string
+                description: Name of educational institution
+              start_date:
+                type: string
+                format: date
+                description: Start date of education
+              end_date:
+                type: string
+                format: date
+                description: End date of education
+              degrees:
+                type: string
+                description: Degrees earned
+              majors:
+                type: string
+                description: Major fields of study
+              minors:
+                type: string
+                description: Minor fields of study
+        skills:
+          type: array
+          description: List of professional skills
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Name of skill
+              type:
+                type: string
+                description: Type of skill
+              category:
+                type: string
+                description: Main category of skill
+              sub_category:
+                type: string
+                description: Sub-category of skill
+              is_software:
+                type: boolean
+                description: Indicates if skill is software-related
+        job_history:
+          type: array
+          description: List of employment experiences
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Company name
+              industry:
+                type: string
+                description: Company industry
               title:
                 type: string
+                description: Job title
+              start_date:
+                type: string
+                format: date
+                description: Employment start date
+              end_date:
+                type: string
+                format: date
+                description: Employment end date
               is_current:
                 type: boolean
+                description: Indicates if this is the current job
+              index:
+                type: integer
+                description: Job sequence number in career history
 
     JobPosting:
       type: object
       required:
-        - posting_id
-        - company_id
+        - job_posting_id
       properties:
-        posting_id:
+        job_posting_id:
           type: string
-        company_id:
+          description: Unique identifier for the job posting
+        company:
           type: string
-        title:
+          description: Name of the hiring company
+        dates:
           type: object
           properties:
-            name:
+            posted_at:
               type: string
-            details:
+              format: date-time
+              description: Posting date and time
+            expired_at:
               type: string
+              format: date-time
+              description: Expiration date and time
         location:
           type: object
           properties:
             market:
               type: string
+              description: Job market location
+            nation_code:
+              type: string
+              description: Two-letter country code
             nation:
               type: string
+              description: Full country name
+        title:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Primary job title
+            details:
+              type: string
+              description: Detailed job title
         skills:
           type: object
           properties:
+            certifications:
+              type: string
+              description: Required certifications
             all:
               type: string
+              description: All required skills
             specialized:
               type: string
+              description: Specialized skills
+            common:
+              type: string
+              description: Common skills
+            software:
+              type: string
+              description: Software skills
         salary:
           type: object
           properties:
             from:
               type: number
+              description: Minimum salary
             to:
               type: number
+              description: Maximum salary
+            average:
+              type: number
+              description: Average salary
+        body:
+          type: string
+          description: Job description
         classification:
           type: object
           properties:
             occupation:
               type: string
+              description: General occupation category
+            detailed_occupation:
+              type: string
+              description: Detailed occupation category
             career_sector:
               type: string
+              description: Career sector/area
 
 paths:
   /company:
@@ -199,11 +360,11 @@ paths:
                     items:
                       $ref: '#/components/schemas/Company'
 
-  /company/{company_id}:
+  /company/{company_name}:
     get:
       summary: Get company details
       parameters:
-        - name: company_id
+        - name: company_name
           in: path
           required: true
           schema:
@@ -215,74 +376,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Company'
-
-  /company/{company_id}/profile:
-    get:
-      summary: List profiles associated with a company
-      parameters:
-        - name: company_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-      responses:
-        '200':
-          description: List of profiles
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total:
-                    type: integer
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Profile'
-
-  /company/{company_id}/job-posting:
-    get:
-      summary: List job postings from a company
-      parameters:
-        - name: company_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-      responses:
-        '200':
-          description: List of job postings
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total:
-                    type: integer
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/JobPosting'
 
   /profile:
     get:
@@ -321,11 +414,11 @@ paths:
                     items:
                       $ref: '#/components/schemas/Profile'
 
-  /profile/{profile_id}:
+  /profile/{employee_id}:
     get:
       summary: Get profile details
       parameters:
-        - name: profile_id
+        - name: employee_id
           in: path
           required: true
           schema:
@@ -379,11 +472,11 @@ paths:
                     items:
                       $ref: '#/components/schemas/JobPosting'
 
-  /job-posting/{posting_id}:
+  /job-posting/{job_posting_id}:
     get:
       summary: Get job posting details
       parameters:
-        - name: posting_id
+        - name: job_posting_id
           in: path
           required: true
           schema:
