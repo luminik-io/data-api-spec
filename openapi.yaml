@@ -18,6 +18,24 @@ components:
       in: header
       name: X-API-Key
 
+  parameters:
+    PaginationPage:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+      description: Page number for pagination
+
+  PaginationLimit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+      description: Number of items per page
+
   schemas:
     Company:
       type: object
@@ -327,6 +345,7 @@ paths:
     get:
       summary: List all companies
       parameters:
+        # Pagination
         - name: page
           in: query
           schema:
@@ -337,14 +356,44 @@ paths:
           schema:
             type: integer
             default: 20
+        
+        # Filter Parameters
         - name: industry
           in: query
           schema:
             type: string
+          description: Filter by industry sector
         - name: country
           in: query
           schema:
             type: string
+          description: Filter by headquarters country
+        - name: domain_exclude
+          in: query
+          schema:
+            type: string
+          description: Exclude companies with this domain
+        - name: min_employees
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+          description: Minimum number of employees required
+        - name: founded_after
+          in: query
+          schema:
+            type: integer
+          description: Filter companies founded after this year
+        - name: has_funding
+          in: query
+          schema:
+            type: boolean
+          description: Filter companies with funding data
+        - name: min_funding
+          in: query
+          schema:
+            type: number
+          description: Minimum total funding in USD millions
       responses:
         '200':
           description: List of companies
@@ -381,6 +430,7 @@ paths:
     get:
       summary: List all profiles
       parameters:
+        # Pagination
         - name: page
           in: query
           schema:
@@ -391,14 +441,139 @@ paths:
           schema:
             type: integer
             default: 20
-        - name: skill
+        
+        # Basic Filters
+        - name: min_connections
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+          description: Minimum number of LinkedIn connections required
+        - name: has_experience
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Filter out profiles without work experience
+        
+        # Experience Filters
+        - name: min_experience
+          in: query
+          schema:
+            type: number
+            minimum: 0
+          description: Minimum years of total work experience
+        - name: max_experience
+          in: query
+          schema:
+            type: number
+          description: Maximum years of total work experience
+        - name: experience_after
           in: query
           schema:
             type: string
-        - name: location
+            format: date
+          description: Only consider experience after this date
+        
+        # Skills and Education
+        - name: skills
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+          description: Filter by required skills (comma-separated)
+        - name: skill_categories
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+          description: Filter by skill categories (comma-separated)
+        
+        # Title Filters
+        - name: current_title
           in: query
           schema:
             type: string
+          description: Filter by current job title
+        - name: any_title
+          in: query
+          schema:
+            type: string
+          description: Filter by any job title in history
+        
+        # Location Filters
+        - name: continent
+          in: query
+          schema:
+            type: string
+          description: Filter by continent
+        - name: country
+          in: query
+          schema:
+            type: string
+          description: Filter by country
+        - name: region
+          in: query
+          schema:
+            type: string
+          description: Filter by region/state
+        - name: locality
+          in: query
+          schema:
+            type: string
+          description: Filter by city/locality
+        
+        # Company Filters
+        - name: current_company
+          in: query
+          schema:
+            type: string
+          description: Filter by current company name
+        - name: any_company
+          in: query
+          schema:
+            type: string
+          description: Filter by any company in work history
+        - name: exclude_company_domain
+          in: query
+          schema:
+            type: string
+          description: Exclude profiles with this company domain
+        
+        # Education Filters
+        - name: education_institution
+          in: query
+          schema:
+            type: string
+          description: Filter by education institution name
+        - name: degree
+          in: query
+          schema:
+            type: string
+          description: Filter by degree type
+        - name: major
+          in: query
+          schema:
+            type: string
+          description: Filter by field of study
+        - name: education_after
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter by education start date after
+        - name: education_before
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter by education end date before
       responses:
         '200':
           description: List of profiles
@@ -435,6 +610,7 @@ paths:
     get:
       summary: List all job postings
       parameters:
+        # Pagination
         - name: page
           in: query
           schema:
@@ -445,18 +621,84 @@ paths:
           schema:
             type: integer
             default: 20
-        - name: skill
+        
+        # Company Filters
+        - name: company
           in: query
           schema:
             type: string
-        - name: location
+          description: Filter by company name
+        - name: exclude_company_domain
           in: query
           schema:
             type: string
+          description: Exclude job postings from this company domain
+        
+        # Location Filters
+        - name: market
+          in: query
+          schema:
+            type: string
+          description: Filter by job market
+        - name: country
+          in: query
+          schema:
+            type: string
+          description: Filter by country (using nation_code)
+        
+        # Skill Filters
+        - name: required_skills
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+          description: Filter by required skills (comma-separated)
+        - name: required_certifications
+          in: query
+          schema:
+            type: string
+          description: Filter by required certifications
+        
+        # Salary Filters
+        - name: min_salary
+          in: query
+          schema:
+            type: number
+          description: Minimum salary requirement
+        - name: max_salary
+          in: query
+          schema:
+            type: number
+          description: Maximum salary cap
+        
+        # Classification Filters
+        - name: occupation
+          in: query
+          schema:
+            type: string
+          description: Filter by occupation category
         - name: career_sector
           in: query
           schema:
             type: string
+          description: Filter by career sector
+        
+        # Date Filters
+        - name: posted_after
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter jobs posted after this datetime
+        - name: exclude_expired
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Exclude expired job postings
       responses:
         '200':
           description: List of job postings
