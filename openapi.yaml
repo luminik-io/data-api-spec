@@ -533,6 +533,182 @@ paths:
                   error:
                     type: string
                     example: "Invalid domain format"
+  paths:
+  # Add these new endpoints
+  /company/{domain}/firmographics:
+    get:
+      summary: Get comprehensive firmographic data for a company
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Company domain name (e.g., walmart.com)
+        - name: include_subsidiaries
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include data from subsidiary companies
+      responses:
+        '200':
+          description: Company firmographic data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  company_name:
+                    type: string
+                  employee_trends:
+                    type: object
+                    properties:
+                      total_count:
+                        type: object
+                        properties:
+                          current:
+                            type: integer
+                          historical:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                date:
+                                  type: string
+                                  format: date
+                                count:
+                                  type: integer
+                                confidence_score:
+                                  type: number
+                                  description: Confidence in the count (0-1)
+                  role_breakdown:
+                    type: object
+                    properties:
+                      departments:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            department:
+                              type: string
+                            count:
+                              type: integer
+                            roles:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  title:
+                                    type: string
+                                  count:
+                                    type: integer
+                  gender_distribution:
+                    type: object
+                    properties:
+                      overall:
+                        type: object
+                        properties:
+                          male:
+                            type: number
+                            description: Percentage of male employees
+                          female:
+                            type: number
+                            description: Percentage of female employees
+                          unknown:
+                            type: number
+                            description: Percentage of unknown gender
+                      by_department:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            department:
+                              type: string
+                            distribution:
+                              type: object
+                              properties:
+                                male:
+                                  type: number
+                                female:
+                                  type: number
+                                unknown:
+                                  type: number
+                      confidence_score:
+                        type: number
+                        description: Confidence in gender prediction (0-1)
+                  funding_information:
+                    type: object
+                    properties:
+                      total_funding:
+                        type: number
+                        description: Total funding amount in USD
+                      funding_rounds:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date:
+                              type: string
+                              format: date
+                            round_type:
+                              type: string
+                            amount:
+                              type: number
+                            investors:
+                              type: array
+                              items:
+                                type: string
+                            source:
+                              type: string
+                              example: "CRUNCHBASE"
+                  acquisition_history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        acquired_company:
+                          type: string
+                        acquired_on:
+                          type: string
+                          format: date
+                        amount:
+                          type: number
+                          description: Acquisition amount in USD
+                        type:
+                          type: string
+                          enum: [acquisition, merge, management_buyout, lbo, acquihire]
+                        source:
+                          type: string
+                          example: "CRUNCHBASE"
+                  metadata:
+                    type: object
+                    properties:
+                      data_freshness:
+                        type: string
+                        format: date-time
+                      includes_subsidiaries:
+                        type: boolean
+                      data_confidence:
+                        type: object
+                        properties:
+                          employee_count:
+                            type: number
+                          gender_distribution:
+                            type: number
+                          role_classification:
+                            type: number
+
+        '404':
+          description: Company not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Company not found"
 
   /profile:
     get:
