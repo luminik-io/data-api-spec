@@ -533,11 +533,9 @@ paths:
                   error:
                     type: string
                     example: "Invalid domain format"
-  paths:
-  # Add these new endpoints
   /company/{domain}/firmographics:
     get:
-      summary: Get comprehensive firmographic data for a company
+      summary: Get firmographic data for a company
       parameters:
         - name: domain
           in: path
@@ -579,89 +577,53 @@ paths:
                                   format: date
                                 count:
                                   type: integer
-                                confidence_score:
-                                  type: number
-                                  description: Confidence in the count (0-1)
                   role_breakdown:
-                    type: object
-                    properties:
-                      departments:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            department:
-                              type: string
-                            count:
-                              type: integer
-                            roles:
-                              type: array
-                              items:
-                                type: object
-                                properties:
-                                  title:
-                                    type: string
-                                  count:
-                                    type: integer
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                          description: Job title
+                        count:
+                          type: integer
+                          description: Number of employees with this title
                   gender_distribution:
                     type: object
                     properties:
-                      overall:
-                        type: object
-                        properties:
-                          male:
-                            type: number
-                            description: Percentage of male employees
-                          female:
-                            type: number
-                            description: Percentage of female employees
-                          unknown:
-                            type: number
-                            description: Percentage of unknown gender
-                      by_department:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            department:
-                              type: string
-                            distribution:
-                              type: object
-                              properties:
-                                male:
-                                  type: number
-                                female:
-                                  type: number
-                                unknown:
-                                  type: number
-                      confidence_score:
+                      male:
                         type: number
-                        description: Confidence in gender prediction (0-1)
+                        description: Percentage of male employees
+                      female:
+                        type: number
+                        description: Percentage of female employees
+                      unknown:
+                        type: number
+                        description: Percentage of unknown gender
                   funding_information:
                     type: object
                     properties:
-                      total_funding:
+                      total_equity_funding_musd:
                         type: number
-                        description: Total funding amount in USD
-                      funding_rounds:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            date:
-                              type: string
-                              format: date
-                            round_type:
-                              type: string
-                            amount:
-                              type: number
-                            investors:
-                              type: array
-                              items:
-                                type: string
-                            source:
-                              type: string
-                              example: "CRUNCHBASE"
+                        description: Total equity funding in USD millions
+                      investor_count:
+                        type: integer
+                        description: Number of investors
+                      latest_funding:
+                        type: object
+                        properties:
+                          year:
+                            type: integer
+                            description: Year of most recent funding
+                          amount_musd:
+                            type: number
+                            description: Latest funding amount in USD millions
+                          round:
+                            type: string
+                            description: Type of latest funding round
+                      post_money_valuation_musd:
+                        type: number
+                        description: Post-money valuation in USD millions
                   acquisition_history:
                     type: array
                     items:
@@ -672,32 +634,12 @@ paths:
                         acquired_on:
                           type: string
                           format: date
-                        amount:
-                          type: number
-                          description: Acquisition amount in USD
-                        type:
+                        acquisition_type:
                           type: string
                           enum: [acquisition, merge, management_buyout, lbo, acquihire]
-                        source:
-                          type: string
-                          example: "CRUNCHBASE"
-                  metadata:
-                    type: object
-                    properties:
-                      data_freshness:
-                        type: string
-                        format: date-time
-                      includes_subsidiaries:
-                        type: boolean
-                      data_confidence:
-                        type: object
-                        properties:
-                          employee_count:
-                            type: number
-                          gender_distribution:
-                            type: number
-                          role_classification:
-                            type: number
+                        price_usd:
+                          type: number
+                          description: Acquisition price in USD if available
 
         '404':
           description: Company not found
