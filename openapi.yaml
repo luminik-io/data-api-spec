@@ -36,14 +36,6 @@ components:
         maximum: 100
       description: Number of items per page
 
-    IncludeSubsidiaries:
-      name: include_subsidiaries
-      in: query
-      description: Include data from subsidiary companies
-      schema:
-        type: boolean
-        default: false
-
   schemas:
     Executive:
       type: object
@@ -82,51 +74,20 @@ components:
     EmployeeTrends:
       type: object
       properties:
-        total_count:
-          type: object
-          properties:
-            current:
-              type: integer
-              description: Current employee count
-            historical:
-              type: array
-              items:
-                type: object
-                properties:
-                  date:
-                    type: string
-                    format: date
-                  count:
-                    type: integer
-
-    JobMetrics:
-      type: object
-      properties:
-        active_count:
+        current_count:
           type: integer
-          description: Number of currently active job postings
-        expired_last_6_months:
-          type: integer
-          description: Number of job postings expired in last 6 months
-        expired_last_1_year:
-          type: integer
-          description: Number of job postings expired in last year
-
-    Subsidiary:
-      type: object
-      properties:
-        company_name:
-          type: string
-          description: Subsidiary company name
-        website:
-          type: string
-          description: Subsidiary website
-        linkedin_slug:
-          type: string
-          description: LinkedIn slug for subsidiary
-        linkedin_url:
-          type: string
-          description: Full LinkedIn URL for subsidiary
+          description: Current employee count
+        historical_monthly_counts:
+          type: array
+          description: 4-year employee history
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              count:
+                type: integer
 
     DepartmentBreakdown:
       type: object
@@ -178,23 +139,25 @@ components:
         funding_information:
           type: object
           properties:
-            total_equity_funding_musd:
+            total_funding:
               type: number
-              description: Total equity funding in USD millions
+              description: Total funding in USD millions
             investor_count:
               type: integer
               description: Number of investors
-            latest_funding:
+            latest_round:
               type: object
               properties:
-                year:
-                  type: integer
+                date:
+                  type: string
+                  format: date
                 amount_musd:
                   type: number
-                round:
+                type:
                   type: string
-            post_money_valuation_musd:
+            valuation:
               type: number
+              description: Company valuation in USD millions
         acquisition_history:
           type: array
           items:
@@ -202,20 +165,18 @@ components:
             properties:
               acquired_company:
                 type: string
-              acquired_on:
+              date:
                 type: string
                 format: date
-              acquisition_type:
+              type:
                 type: string
-              price_usd:
+              value_musd:
                 type: number
+                description: Acquisition value in USD millions
 
     CompanyResponse:
       type: object
       properties:
-        is_parent:
-          type: boolean
-          description: Indicates if this is a parent company
         name:
           type: string
           description: Company name
@@ -246,19 +207,29 @@ components:
           properties:
             short:
               type: string
+              description: Short company description
             long:
               type: string
+              description: Detailed company description
         metrics:
           type: object
           properties:
             employee_count:
               type: integer
-            jobs:
-              $ref: '#/components/schemas/JobMetrics'
+              description: Current employee count
         subsidiaries:
           type: array
           items:
-            $ref: '#/components/schemas/Subsidiary'
+            type: object
+            properties:
+              name:
+                type: string
+              website:
+                type: string
+              linkedin_slug:
+                type: string
+              linkedin_url:
+                type: string
         key_executives:
           type: array
           items:
@@ -288,16 +259,12 @@ components:
           properties:
             continent:
               type: string
-              description: Continent name
             country:
               type: string
-              description: Country name
             region:
               type: string
-              description: Region/State name
             locality:
               type: string
-              description: City/locality name
             geo:
               type: string
               description: Geographic coordinates in format 'latitude,longitude'
@@ -310,108 +277,120 @@ components:
         linkedin_url:
           type: string
           description: URL to LinkedIn profile
+        linkedin_slug:
+          type: string
+          description: LinkedIn profile slug
         certifications:
           type: array
-          description: Professional certifications
           items:
             type: object
             properties:
               name:
                 type: string
-                description: Name of certification
         education_history:
           type: array
-          description: Educational background
           items:
             type: object
             properties:
-              name:
+              institution:
                 type: string
-                description: Name of educational institution
               start_date:
                 type: string
                 format: date
-                description: Start date
               end_date:
                 type: string
                 format: date
-                description: End date
               degrees:
                 type: string
-                description: Degrees earned
               majors:
                 type: string
-                description: Major fields of study
               minors:
                 type: string
-                description: Minor fields of study
         skills:
           type: array
-          description: Professional skills
           items:
             type: object
             properties:
               name:
                 type: string
-                description: Name of skill
               type:
                 type: string
-                description: Type of skill
               category:
                 type: string
-                description: Category of skill
               sub_category:
                 type: string
-                description: Sub-category of skill
               is_software:
                 type: boolean
-                description: Indicates if skill is software-related
         job_history:
           type: array
-          description: Employment history
           items:
             type: object
             properties:
-              name:
+              company:
                 type: string
-                description: Company name
-              industry:
-                type: string
-                description: Industry
               title:
                 type: string
-                description: Job title
               start_date:
                 type: string
                 format: date
-                description: Start date
               end_date:
                 type: string
                 format: date
-                description: End date
+              industry:
+                type: string
               is_current:
                 type: boolean
-                description: Indicates if this is current position
-              index:
-                type: integer
-                description: Position index in job history
         company_info:
           type: object
           properties:
             current_company:
               type: string
-              description: Current company name
             parent_company:
               type: string
-              description: Parent company name if applicable
             company_domain:
               type: string
-              description: Company domain name
 
 paths:
+  /company:
+    get:
+      summary: List companies
+      description: Retrieves a list of companies with pagination and filtering capabilities
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationLimit'
+        - name: industry
+          in: query
+          schema:
+            type: string
+          description: Filter by industry sector
+        - name: country
+          in: query
+          schema:
+            type: string
+          description: Filter by headquarters country
+      responses:
+        '200':
+          description: List of companies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CompanyResponse'
+
   /company/{linkedin_slug}:
     get:
-      summary: Get company details by LinkedIn slug
+      summary: Get company details
+      description: Retrieves comprehensive details about a specific company
       parameters:
         - name: linkedin_slug
           in: path
@@ -429,109 +408,28 @@ paths:
         '404':
           description: Company not found
 
-
-  /company:
-    post:
-      summary: Get details for multiple companies
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                linkedin_slugs:
-                  type: array
-                  items:
-                    type: string
-                  description: Array of LinkedIn slugs
-      responses:
-        '200':
-          description: Multiple company details
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  companies:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/CompanyResponse'
-  
-
   /profile:
     get:
       summary: List profiles
+      description: Retrieves a paginated list of professional profiles with extensive filtering options
       parameters:
         - $ref: '#/components/parameters/PaginationPage'
         - $ref: '#/components/parameters/PaginationLimit'
-        # Location Filters
-        - name: continent
+        - name: min_connections
+          in: query
+          schema:
+            type: integer
+          description: Minimum LinkedIn connections
+        - name: current_title
           in: query
           schema:
             type: string
-          description: Filter by continent
-        - name: country
-          in: query
-          schema:
-            type: string
-          description: Filter by country
-        - name: region
-          in: query
-          schema:
-            type: string
-          description: Filter by region/state
-        - name: locality
-          in: query
-          schema:
-            type: string
-          description: Filter by city/locality
-        # Current Role Filters
+          description: Current job title filter
         - name: current_company
           in: query
           schema:
             type: string
-          description: Filter by current company name
-        - name: current_title
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-          style: form
-          explode: false
-          description: Filter by current job titles (comma-separated)
-        # Experience Filters
-        - name: min_experience_years
-          in: query
-          schema:
-            type: integer
-            minimum: 0
-          description: Minimum years of experience
-        - name: has_experience_at
-          in: query
-          schema:
-            type: string
-          description: Filter profiles with experience at specific company
-        # Skills Filters
-        - name: required_skills
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-          style: form
-          explode: false
-          description: Filter by required skills (comma-separated)
-        - name: skill_categories
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
-          style: form
-          explode: false
-          description: Filter by skill categories (comma-separated)
+          description: Current company name
       responses:
         '200':
           description: List of profiles
@@ -547,36 +445,17 @@ paths:
                     items:
                       $ref: '#/components/schemas/Profile'
 
-  /profile/{employee_id}:
+  /profile/linkedin/{linkedin_slug}:
     get:
-      summary: Get profile by employee ID
-      parameters:
-        - name: employee_id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique employee identifier
-      responses:
-        '200':
-          description: Profile details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Profile'
-        '404':
-          description: Profile not found
-
-  /profile/{linkedin_slug}:
-    get:
-      summary: Get profile by LinkedIn slug
+      summary: Get profile details
+      description: Retrieves detailed information about a specific professional using their LinkedIn identifier
       parameters:
         - name: linkedin_slug
           in: path
           required: true
           schema:
             type: string
-          description: LinkedIn profile slug (e.g., 'john-doe-123abc' from linkedin.com/in/john-doe-123abc)
+          description: LinkedIn profile slug
       responses:
         '200':
           description: Profile details
@@ -586,8 +465,6 @@ paths:
                 $ref: '#/components/schemas/Profile'
         '404':
           description: Profile not found
-
-  
 
 security:
   - apiKey: []
